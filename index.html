@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name = "viewport" content = "width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <title>CS 203 Project 2 Website</title>
+    <link rel = stylesheet href="style.css">
+    <script src = script.js></script>
+</head>
+
+<body>
+
+<div class = additionalInfo>
+    <a href="https://github.com/Josink">GitHub</a> <a href="algorithms.html">Learn more about Algorithms</a>
+</div>
+
+    <div class = container>
+
+        <div class = title>
+            <h1>ALGORITHMS</h1>
+        </div>
+
+        <div class = info>
+            <p>This is a website that randomly generates a given number of integers and
+            sorts it using common algorithm in computer science. This is a modified assignment
+            for the CS 203 class taught by Dr. Jamal Alhiyafi at Kettering University.</p>
+        </div>
+
+        <div class = algorithmSelectContainer>
+            <h3>Would you like to either search or sort?</h3>
+
+            <div class = dds>
+
+                <div class = dropDown>
+                    <button onclick="toggleSearchDropDown()"
+                            class = dropButton>Search</button>
+                    <div id = "mySearchDropDown" class = searchDropDownContent>
+                        <a href=#sequentialSearch onclick="handleAlgorithmSelect('Sequential Search')">Sequential Search</a>
+                        <a href =#binarySearch onclick="handleAlgorithmSelect('Binary Search')">Binary Search</a>
+                    </div>
+                </div>
+
+                <div class = dropDown>
+                    <button onclick="toggleSortDropDown()"
+                            class = dropButton>Sort</button>
+                    <div id = mySortDropDown class = sortDropDownContent>
+                        <a href=#selectionSort onclick="handleAlgorithmSelect('Selection Sort')">Selection Sort</a>
+                        <a href =#bubbleSort onclick="handleAlgorithmSelect('Bubble Sort')">Bubble Sort</a>
+                        <a href = #insertionSort onclick="handleAlgorithmSelect('Insertion Sort')">Insertion Sort</a>
+                        <a href = #mergeSort onclick="handleAlgorithmSelect('Merge Sort')">Merge Sort</a>
+                        <a href = #quicksort onclick="handleAlgorithmSelect('Quick Sort')">Quick Sort</a>
+                        <a href = #heapSort onclick="handleAlgorithmSelect('Heap Sort')">Heap Sort</a>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</body>
+
+</html>
