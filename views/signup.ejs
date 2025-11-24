@@ -25,7 +25,7 @@
 
         <div class = "authenticationButton">
             <a href="/" class="btn btn-outline">Home</a>
-            <a href="/signup" class="btn btn-primary">Sign Up</a>
+            <a href="/login" class="btn btn-primary">Log In</a>
         </div>
 
     </div>
@@ -33,13 +33,26 @@
 </header>
 
 <main>
-
     <div class = container>
         <div class = title>
-            <h1>LOGIN</h1>
+            <h1>SIGNUP</h1>
+
+            <form action = "/register" method = "POST">
+                <% errors.forEach(error =>{ %>
+                    <p class = notice>*<%= error %></p>
+                <%})%>
+
+                <fieldset>
+                    <label for="username">Desired Username</label>
+                    <input type="text" id="username" name="username" autocomplete="off">
+                    <label for="password">Desired Password</label>
+                    <input type="password" id="password" name="password" autocomplete="off">
+
+                    <button>Sign Up</button>
+                </fieldset>
+            </form>
         </div>
     </div>
-
 </main>
 
 <footer>
