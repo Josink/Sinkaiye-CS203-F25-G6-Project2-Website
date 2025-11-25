@@ -1,5 +1,26 @@
+require("dotenv").config();
+const jwt = require("jsonwebtoken")
+const bcrypt = require('bcrypt')
 const express = require('express')
-const {response} = require("express");
+const db = require("better-sqlite3")("ourApp.db");
+db.pragma("journal_mode = WAL")
+
+//database setup
+const createTables = db.transaction(()=>{
+    db.prepare(
+        `
+        CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username STRING NOT NULL UNIQUE,
+        password STRING NOT NULL UNIQUE
+    )
+    `
+    ).run()
+})
+
+createTables()
+//database setup end
+
 const app = express()
 
 app.set("view engine","ejs")
@@ -40,13 +61,35 @@ app.post("/register",(req,res)=>{
     if (req.body.username && req.body.username.length > 10) errors.push("Username cannot exceed than 10 characters.")
     if (req.body.username && !req.body.username.match(/^[a-zA-Z0-9]+$/)) errors.push("Username can only contain letters and numbers.")
 
+    if (!req.body.password) errors.push("You must provide a password.")
+    if (req.body.password && req.body.password.length < 8) errors.push("Password cannot be less than 8 characters.")
+    if (req.body.password && req.body.password.length > 50) errors.push("Password cannot exceed than 50 characters.")
 
     if(errors.length){
        return res.render("signup",{errors})
-    } else{
-        res.send("Thank you for filling it out")
-
     }
+
+    // save the new user into database
+    const salt = bcrypt.genSaltSync(10);
+    req.body.password = bcrypt.hashSync(req.body.password, salt);
+
+    const ourStatement = db.prepare("INSERT INTO users (username, password) VALUES (?,?)")
+    const result = ourStatement.run(req.body.username, req.body.password)
+
+    const lookupStatement = db.prepare("SELECT * FROM users WHERE ROWID = ?;");
+    const ourUser = lookupStatement.get(result.lastInsertRowid)
+
+    //log the user in by giving them a cookie
+    const ourTokenValue = jwt.sign({exp: Math.floor(Date.now()/1000) + 60 * 60 * 24, skyColor: "blue", userid: ourUser.id, username: ourUser.username},process.env.JWTSECRET)
+
+    res.cookie("ourSimpleApp",ourTokenValue,{
+        httpOnly:true,
+        secure:true,
+        sameSite:"strict",
+        maxAge: 1000 * 60 * 60 * 24 // 1 day
+    })
+
+    res.send("Thank you!")
 })
 
 app.listen(3000)
