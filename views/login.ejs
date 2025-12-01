@@ -1,15 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <title>CS 203 Project 2 Website Login Page</title>
-    <link rel = stylesheet href="/styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
+<%- include('includes/head') %>
 
 <body>
-
 <header>
     <div class = "navContainer">
 
@@ -23,28 +17,48 @@
             <a href="/algorithms"><i class="fas fa-sort-amount-down"></i> Algorithms</a>
         </div>
 
-        <div class = "authenticationButton">
-            <a href="/" class="btn btn-outline">Home</a>
-            <a href="/signup" class="btn btn-primary">Sign Up</a>
-        </div>
+        <% if (user){ %>
+            <div class = "authenticationButton">
+                <a href="/" class="btn btn-outline">Home</a>
+                <a href="/logout" class="btn btn-primary">Log out</a>
+            </div>
+        <% } else{ %>
+            <div class = "authenticationButton">
+                <a href="/" class="btn btn-outline">Home</a>
+                <a href="/signup" class="btn btn-primary">Sign Up</a>
+            </div>
+        <% } %>
 
     </div>
 
 </header>
 
 <main>
-
     <div class = container>
         <div class = title>
             <h1>LOGIN</h1>
         </div>
+
+        <form action = "/login" method = "POST">
+            <% errors.forEach(error =>{ %>
+                <p class = notice>*<%= error %></p>
+            <%})%>
+
+            <fieldset>
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" autocomplete="off">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" autocomplete="off">
+
+                <button>Log In</button>
+            </fieldset>
+        </form>
+
     </div>
 
 </main>
 
-<footer>
-    <small>&copy; CS 203 Project 2 - Jay Sinkaiye</small>
-</footer>
+<%- include('includes/footer') %>
 
 </body>
 

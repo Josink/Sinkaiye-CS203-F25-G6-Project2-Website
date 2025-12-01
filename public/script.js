@@ -1,3 +1,5 @@
+let selectedAlgorithm = '';
+
 function toggleSearchDropDown(){
     document.getElementById("mySearchDropDown").classList.toggle("show");
     document.getElementById("mySortDropDown").classList.remove("show");
@@ -33,29 +35,49 @@ window.onclick = function(event) {
 }
 
 function handleAlgorithmSelect(algorithmName){
+    selectedAlgorithm = algorithmName;
+
     document.getElementById("mySearchDropDown").classList.remove("show");
     document.getElementById("mySortDropDown").classList.remove("show");
 
-    showAlgorithmPrompt(algorithmName);
+    document.getElementById("formTitle").textContent = `Configure ${algorithmName}`;
+    document.getElementById("inputForm").style.display = "block";
+    document.getElementById("inputForm").scrollIntoView({behavior: "smooth"});
 }
 
-function showAlgorithmPrompt(algorithmName){
-    const input = algorithmName.includes('Search') ? 'an integer for how many values you want in your array to search from': 'an integer for how many values you want in your array to sort';
+function cancelForm(){
+    document.getElementById("inputForm").style.display = "none";
+    document.getElementById("algorithmForm").reset();
+    selectedAlgorithm = "";
+}
 
-    const userInput = prompt(
-        `You selected: ${algorithmName}\n\nPlease enter ${input}:`
-    );
+document.getElementById("algorithmForm").addEventListener('submit', function (e){
+    e.preventDefault();
 
-    if (userInput !== null) {
-        if (userInput.trim() !== '') {
-            processAlgorithm(algorithmName, userInput);
-        } else {
-            alert('Please enter a valid input.');
-            showAlgorithmPrompt(algorithmName);
-        }
+    const attemptName = document.getElementById("attemptName").value;
+    const valueCount = document.getElementById("valueCount").value;
+
+    if(attemptName && valueCount) {
+        fetch('/run-algorithm',{
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                algorithmName: selectedAlgorithm,
+                attemptName: attemptName,
+                valueCount: valueCount,
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Server response:", data);
+                alert(`Algorithm execution started!\n\nAlgorithm: ${selectedAlgorithm}\nValues: ${valueCount}\nAttempt: ${attemptName}`);
+                cancelForm();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error starting algorithm');
+            });
     }
-}
-
-function processAlgorithm(algorithmName, userInput) {
-    alert(`Running ${algorithmName} with input: ${userInput}\n\nThis would now execute the ${algorithmName} algorithm.`);
-}
+})

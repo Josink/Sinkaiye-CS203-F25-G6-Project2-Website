@@ -1,11 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel = stylesheet href="/styles.css">
-</head>
+
+<%- include('includes/head') %>
+
 <body>
+
+<header>
+    <div class = "navContainer">
+
+        <div class="logo">
+            <i class="fas fa-project-diagram"></i>
+            <span>Algorithms</span>
+        </div>
+
+        <div class = "navLinks">
+            <a href="https://github.com/Josink/Sinkaiye-CS203-F25-G6-Project2-Website" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+            <a href="/algorithms"><i class="fas fa-sort-amount-down"></i> Algorithms</a>
+        </div>
+
+        <% if (user){ %>
+            <div class = "authenticationButton">
+                <a href="/" class="btn btn-outline">Home</a>
+                <a href="/logout" class="btn btn-primary">Log out</a>
+            </div>
+        <% } else{ %>
+            <div class = "authenticationButton">
+                <a href="/" class="btn btn-outline">Home</a>
+                <a href="/signup" class="btn btn-primary">Sign Up</a>
+            </div>
+        <% } %>
+
+    </div>
+
+</header>
+
+<main>
+
+    <div class = container>
+        <div class = title>
+            <h1>ALGORITHMS</h1>
+        </div>
+    </div>
+
+</main>
+
+<%- include('includes/footer') %>
+
+
+<%- include('includes/footer') %>
 
 </body>
 </html>
