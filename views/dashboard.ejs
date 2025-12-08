@@ -25,6 +25,8 @@
 
     </div>
 
+
+
 </header>
 
 <main>
@@ -32,6 +34,14 @@
     <div class = container>
         <div class = title>
             <h1>Your Dashboard</h1>
+        </div>
+
+        <div class = previousPosts>
+            <ul>
+                <% posts.forEach(post =>{ %>
+                    <li><a href = "/post/<%= post.id %>"><%= post.attemptName%></a> on <%= new Date(post.createdDate).getMonth() + 1%>/<%= new Date(post.createdDate).getDate()%>/<%= new Date(post.createdDate).getFullYear()%> </li>
+                <% }) %>
+            </ul>
         </div>
 
         <div class = algorithmSelectContainer>

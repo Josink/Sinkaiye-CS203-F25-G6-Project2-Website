@@ -66,18 +66,14 @@ document.getElementById("algorithmForm").addEventListener('submit', function (e)
             body: JSON.stringify({
                 algorithmName: selectedAlgorithm,
                 attemptName: attemptName,
-                valueCount: valueCount,
+                numValues: valueCount,
             })
         })
             .then(response => response.json())
             .then(data => {
-                console.log("Server response:", data);
-                alert(`Algorithm execution started!\n\nAlgorithm: ${selectedAlgorithm}\nValues: ${valueCount}\nAttempt: ${attemptName}`);
-                cancelForm();
+                if (data.redirect){
+                    window.location.href = data.redirect;
+                }
             })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error starting algorithm');
-            });
     }
 })

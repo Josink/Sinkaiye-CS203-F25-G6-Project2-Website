@@ -22,11 +22,11 @@ const createTables = db.transaction(()=>{
     db.prepare(`
     CREATE TABLE IF NOT EXISTS posts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        createdDate TEXT,
-        title STRING NOT NULL,
-        body TEXT NOT NULL,
-        num INTEGER NOT NULL,
+        attemptName TEXT,
+        algorithmName TEXT,
+        numValues INTEGER,
         authorid INTEGER,
+        createdDate TEXT,
         FOREIGN KEY (authorid) REFERENCES users (id)
     )
     `).run()
@@ -78,7 +78,9 @@ app.get("/signup",(req,res)=>{
 })
 
 app.get("/dashboard",mustBeLoggedIn, (req,res)=>{
-    res.render("dashboard.ejs")
+    const postStatement = db.prepare("SELECT * FROM posts WHERE authorid = ?")
+    const posts = postStatement.all(req.user.userid)
+    res.render("dashboard.ejs", {posts})
 })
 
 app.get("/logout",(req,res)=>{
@@ -140,21 +142,92 @@ function sharedPostValidation(req){
     return errors;
 }
 
+app.post("/post", (req, res)=>{
+    const {attemptName, numValues, algorithm} = req.body
+
+    const n = parseInt(numValues)
+
+    const randomArray = [];
+    for(let i =0; i < n; i++){
+        randomArray.push(Math.floor(Math.random()*30000001)) // up to 3 million numbers
+    }
+
+    let sortedArray;
+    switch (algorithm){
+        case "Sequential Sort":
+            sortedArray = randomArray;
+            break;
+        case "Binary Sort":
+            sortedArray = randomArray;
+            break;
+        case "Insertion Sort":
+            sortedArray = randomArray;
+            break;
+        case "Merge Sort":
+            sortedArray = randomArray;
+            break;
+        case "Quick Sort":
+            sortedArray = randomArray;
+            break;
+        case "Heap Sort":
+            sortedArray = randomArray;
+            break;
+        case "Sequential Search":
+            sortedArray = randomArray;
+            break;
+        case "Binary Search":
+            sortedArray = randomArray;
+            break;
+        default:
+            sortedArray = randomArray;
+    }
+
+    const newPost = {
+        id: posts.length + 1,
+        attemptName,
+        numValues: n,
+        algorithm,
+        original: randomArray,
+        sorted: sortedArray
+    };
+
+    posts.push(newPost);
+
+    res.redirect(`/post/${newPost.id}`);
+
+})
+
+app.get("/post/:id", (req, res)=>{
+    const statement = db.prepare("SELECT posts.*, users.username FROM posts INNER JOIN users ON posts.authorid = users.id WHERE posts.id = ?")
+    const post = statement.get(req.params.id)
+
+    if (!post){
+        return res.redirect("/")
+    }
+
+    res.render("single-post", {post})
+})
+
 app.post("/run-algorithm", mustBeLoggedIn, (req,res)=>{
     console.log("=== RUN ALGORITHM REQUEST ===");
     console.log("Request body:", req.body);
 
     const {algorithmName, attemptName, numValues} = req.body
 
-    res.send({
-        success: true,
-        message: `Algorithm ${algorithmName} started with ${numValues} values`,
-        attemptName: attemptName
-    })
+    const userExists = db.prepare("SELECT id FROM users WHERE id = ?").get(req.user?.userid);
+    if (!userExists) {
+        console.error("Tried to insert post but user not found:", req.user);
+        return res.status(400).send({ error: "Invalid user" });
+    }
 
-    const ourStatement = db.prepare("INSERT INTO posts (attemptName, algorithmName, authorid, createdDate ) VALUES (?,?,?,?)")
+    const ourStatement = db.prepare("INSERT INTO posts (attemptName, algorithmName,numValues, authorid, createdDate ) VALUES (?,?,?,?,?)")
     const result = ourStatement.run(
-        req.body.attemptName, req.body.algorithmName, req.body.numValues,req.body.user.userid, new Date().toISOString())
+        attemptName, algorithmName, numValues, req.user.userid, new Date().toISOString())
+
+    const getPostStatement = db.prepare("SELECT * FROM posts WHERE ID = ?")
+    const realPost = getPostStatement.get(result.lastInsertRowid)
+
+    return res.json({ redirect: `/post/${realPost.id}` })
 })
 
 app.post("/register",(req,res)=>{

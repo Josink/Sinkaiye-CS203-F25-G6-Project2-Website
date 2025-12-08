@@ -40,12 +40,174 @@
         <div class = title>
             <h1>ALGORITHMS</h1>
         </div>
+
+        <p>
+            This website collects implementations of the standard sorting algorithms
+            <span class = highlight>(Selection, Bubble, Insertion, Merge, Quick, Heap)</span>
+            and searching algorithms
+            <span class = highlight>(Sequential, Binary)</span>.
+            The program runs each algorithm on controlled inputs (random, sorted
+            ascending) records comparisons, swaps/movements, and runtime, and outputs CSV
+            data for analysis.
+        </p>
+
+        <div class = subtitle>
+            <h2>Sorting Algorithms</h2>
+        </div>
+
+        <div class = algInfo>
+            <h2>
+                Selection Sort
+            </h2>
+            <p>
+                Selection Sort repeatedly scans the unsorted portion of the array,
+                selects the smallest element, and swaps it into its correct position.
+                It always performs the same number of comparisons regardless of input
+                order.
+            </p>
+
+            <h3>
+                Time Complexity:
+            </h3>
+
+            <ul>
+                <li>Best: O(n²)</li>
+                <li>Average: O(n²)</li>
+                <li>Worst: O(n²)</li>
+            </ul>
+            <p>
+                Basic operations: comparisons + swaps
+            </p>
+
+        </div>
+
+        <div class = algInfo>
+            <h2>
+                Bubble Sort
+            </h2>
+            <p>
+                Bubble Sort repeatedly compares adjacent elements and swaps
+                them if out of order. Optimized versions stop early if no swap
+                occurs in a pass.
+            </p>
+
+            <h3>
+                Time Complexity:
+            </h3>
+
+            <ul>
+                <li>Best: O(n)</li>
+                <li>Average: O(n²)</li>
+                <li>Worst: O(n²)</li>
+            </ul>
+            <p>
+                Basic operations: comparisons + swaps
+            </p>
+
+        </div>
+
+        <div class = algInfo>
+            <h2>
+                Insertion Sort
+            </h2>
+            <p>
+                Insertion Sort grows a sorted list by inserting one element
+                at a time into its correct position.
+            </p>
+
+            <h3>
+                Time Complexity:
+            </h3>
+
+            <ul>
+                <li>Best: O(n)</li>
+                <li>Average: O(n²)</li>
+                <li>Worst: O(n²)</li>
+            </ul>
+            <p>
+                Basic operations: comparisons + swaps
+            </p>
+
+        </div>
+
+        <div class = algInfo>
+            <h2>
+                Merge Sort
+            </h2>
+            <p>
+                Merge Sort uses the divide-and-conquer strategy:
+                split the array, recursively sort subarrays, and merge them
+            </p>
+
+            <h3>
+                Time Complexity:
+            </h3>
+
+            <ul>
+                <li>Best: O(nlogn)</li>
+                <li>Average: O(nlogn)</li>
+                <li>Worst: O(nlogn)</li>
+            </ul>
+            <p>
+                Basic operations: comparisons + swaps
+            </p>
+
+        </div>
+
+        <div class = algInfo>
+            <h2>
+                Quick Sort
+            </h2>
+            <p>
+                Quick Sort partitions the array around a
+                pivot, then recursively sorts the left and right halves.
+            </p>
+
+            <h3>
+                Time Complexity:
+            </h3>
+
+            <ul>
+                <li>Best: O(nlogn)</li>
+                <li>Average: O(nlogn)</li>
+                <li>Worst: O(n²)</li>
+            </ul>
+            <p>
+                Basic operations: comparisons + swaps
+            </p>
+
+        </div>
+
+        <div class = algInfo>
+            <h2>
+                Heap Sort
+            </h2>
+            <p>
+                Heap Sort builds a max heap and repeatedly extracts the maximum element.
+            </p>
+
+            <h3>
+                Time Complexity:
+            </h3>
+
+            <ul>
+                <li>Best: O(nlogn)</li>
+                <li>Average: O(nlogn)</li>
+                <li>Worst: O(nlogn)</li>
+            </ul>
+            <p>
+                Basic operations: comparisons + swaps
+            </p>
+
+        </div>
+
+        <div class = subtitle>
+            <h2>Searching Algorithms</h2>
+        </div>
+
     </div>
 
 </main>
-
-<%- include('includes/footer') %>
-
 
 <%- include('includes/footer') %>
 

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<%- include('includes/head') %>
+
+<body>
+
+<header>
+    <div class = "navContainer">
+
+        <div class="logo">
+            <i class="fas fa-project-diagram"></i>
+            <span>Algorithms</span>
+        </div>
+
+        <div class = "navLinks">
+            <a href="https://github.com/Josink/Sinkaiye-CS203-F25-G6-Project2-Website" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+            <a href="/algorithms"><i class="fas fa-sort-amount-down"></i> Algorithms</a>
+        </div>
+
+        <div class = "authenticationButton">
+            <a href="/" class="btn btn-outline">Home</a>
+            <a href="/logout" class="btn btn-primary">Log out</a>
+        </div>
+
+    </div>
+
+</header>
+
+<main>
+
+    <div class = container>
+        <div class = title>
+            <h1> <%= post.attemptName %> </h1>
+        </div>
+
+        <h4>
+            posted by <%=post.username%> on <%= new Date(post.createdDate).getMonth() + 1%>/<%= new Date(post.createdDate).getDate()%>/<%= new Date(post.createdDate).getFullYear()%>
+        </h4>
+
+        <div>
+            <%= post.algorithmName%>
+        </div>
+
+
+    </div>
+
+</main>
+
+<%- include('includes/footer') %>
+
+</body>
+
+</html>

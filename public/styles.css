@@ -6,6 +6,7 @@
     --white: #ffffff;
     --light-bg: #f8f9fa;
     --dark-text: #333333;
+    --lighter-text: #666;;
 }
 
 * {
@@ -13,6 +14,21 @@
     padding: 0;
     box-sizing: border-box;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+ul{
+    list-style: none;
+    text-align: left;
+    color: var(--dark-text);
+}
+
+ul a{
+    color: var(--dark-text);
+    text-decoration: none;
+}
+
+ul a:hover{
+    color: var(--accent);
 }
 
 body {
@@ -176,7 +192,7 @@ p {
 }
 
 .card p{
-    color: #666;
+    color: var(--lighter-text);
     font-size: 0.9rem;
 }
 
@@ -397,6 +413,49 @@ label {
     font-size: 1rem;
     font-weight: bold;
     transition: background-color 0.3s;
+}
+
+.previousPosts{
+    display: flex;
+    gap: 20px;
+    justify-content: left;
+    flex-wrap: wrap;
+}
+
+.subtitle{
+    text-align: left;
+    margin-top: 2rem;
+    color: var(--accent);
+}
+
+.algInfo{
+    background-color: var(--light-bg);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: tranform 0.3s;
+}
+
+.algInfo h2{
+    text-align: left;
+    margin-bottom: 0.5rem;
+    color: var(--dark-text);
+}
+
+.algInfo h3{
+    text-align: left;
+    margin-bottom: 0.2rem;
+    color: var(--dark-text);
+}
+
+.algInfo p{
+    text-align: left;
+    color: var(--lighter-text);
+    font-size: 0.9rem;
+}
+
+.algInfo li{
+    list-style: disc inside;
 }
 
 footer {
