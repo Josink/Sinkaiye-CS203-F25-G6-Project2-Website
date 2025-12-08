@@ -44,49 +44,48 @@
             </ul>
         </div>
 
-        <div class = algorithmSelectContainer>
-            <h3>Would you like to either search or sort?</h3>
+        <div class="algorithmSelectContainer">
+            <h3>Choose an algorithm type:</h3>
 
-            <div class = dds>
+            <div class="dds">
 
-                <div class = dropDown>
-                    <button onclick="toggleSearchDropDown()"
-                            class = dropButton>Search</button>
-                    <div id = "mySearchDropDown" class = searchDropDownContent>
-                        <a href=#sequentialSearch onclick="handleAlgorithmSelect('Sequential Search')">Sequential Search</a>
-                        <a href =#binarySearch onclick="handleAlgorithmSelect('Binary Search')">Binary Search</a>
+                <div class="dropDown">
+                    <button type="button" onclick="toggleSearchDropDown()" class="dropButton">Search</button>
+                    <div id="mySearchDropDown" class="searchDropDownContent">
+                        <a href="#" onclick="handleAlgorithmSelect('Sequential Search')">Sequential Search</a>
+                        <a href="#" onclick="handleAlgorithmSelect('Binary Search')">Binary Search</a>
                     </div>
                 </div>
 
-                <div class = dropDown>
-                    <button onclick="toggleSortDropDown()"
-                            class = dropButton>Sort</button>
-                    <div id = mySortDropDown class = sortDropDownContent>
-                        <a href=#selectionSort onclick="handleAlgorithmSelect('Selection Sort')">Selection Sort</a>
-                        <a href =#bubbleSort onclick="handleAlgorithmSelect('Bubble Sort')">Bubble Sort</a>
-                        <a href = #insertionSort onclick="handleAlgorithmSelect('Insertion Sort')">Insertion Sort</a>
-                        <a href = #mergeSort onclick="handleAlgorithmSelect('Merge Sort')">Merge Sort</a>
-                        <a href = #quicksort onclick="handleAlgorithmSelect('Quick Sort')">Quick Sort</a>
-                        <a href = #heapSort onclick="handleAlgorithmSelect('Heap Sort')">Heap Sort</a>
+                <div class="dropDown">
+                    <button type="button" onclick="toggleSortDropDown()" class="dropButton">Sort</button>
+                    <div id="mySortDropDown" class="sortDropDownContent">
+                        <a href="#" onclick="handleAlgorithmSelect('Selection Sort')">Selection Sort</a>
+                        <a href="#" onclick="handleAlgorithmSelect('Bubble Sort')">Bubble Sort</a>
+                        <a href="#" onclick="handleAlgorithmSelect('Insertion Sort')">Insertion Sort</a>
+                        <a href="#" onclick="handleAlgorithmSelect('Merge Sort')">Merge Sort</a>
+                        <a href="#" onclick="handleAlgorithmSelect('Quick Sort')">Quick Sort</a>
+                        <a href="#" onclick="handleAlgorithmSelect('Heap Sort')">Heap Sort</a>
                     </div>
                 </div>
 
             </div>
-
         </div>
 
-        <div id = inputForm class = inputForm>
+        <div id="inputForm" class="inputForm" style="display:none;">
             <h4 id="formTitle">Configure Your Algorithm</h4>
 
-            <form id="algorithmForm">
+            <form id="algorithmForm" action="/run-algorithm" method="post">
+                <input type="hidden" id="algorithmName" name="algorithmName">
+
                 <div class="form-group">
                     <label for="attemptName">Attempt Name</label>
-                    <input type="text" id="attemptName" placeholder="Enter a name for this attempt" required>
+                    <input type="text" id="attemptName" name="attemptName" placeholder="Enter a name for this attempt" required>
                 </div>
 
                 <div class="form-group">
                     <label for="valueCount">Number of Values</label>
-                    <input type="number" id="valueCount" min="1" max="1000000" placeholder="Enter number of values" required>
+                    <input type="number" id="valueCount" name="numValues" min="1" max="1000000" placeholder="Enter number of values" required>
                 </div>
 
                 <div class="form-actions">
@@ -95,9 +94,7 @@
                 </div>
             </form>
         </div>
-
     </div>
-
 </main>
 
 <%- include('includes/footer') %>

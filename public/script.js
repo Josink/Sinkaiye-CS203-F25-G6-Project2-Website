@@ -1,79 +1,58 @@
 let selectedAlgorithm = '';
 
-function toggleSearchDropDown(){
+// Toggle search dropdown
+function toggleSearchDropDown() {
     document.getElementById("mySearchDropDown").classList.toggle("show");
     document.getElementById("mySortDropDown").classList.remove("show");
-
 }
 
-function toggleSortDropDown(){
-    document.getElementById("mySortDropDown").classList.toggle("show")
+// Toggle sort dropdown
+function toggleSortDropDown() {
+    document.getElementById("mySortDropDown").classList.toggle("show");
     document.getElementById("mySearchDropDown").classList.remove("show");
-
 }
 
+// Close dropdowns if clicked outside
 window.onclick = function(event) {
     if (!event.target.matches('.dropButton')) {
-        var dropDowns = document.getElementsByClassName("searchDropDownContent");
-        var i;
-        for (i = 0; i < dropDowns.length; i++) {
-            var openDropdown = dropDowns[i];
-            if (openDropdown.classList.contains("show")) {
-                openDropdown.classList.remove("show");
-            }
+        // Close search dropdown
+        const dropDowns = document.getElementsByClassName("searchDropDownContent");
+        for (let i = 0; i < dropDowns.length; i++) {
+            dropDowns[i].classList.remove("show");
         }
 
-        var sDropDowns = document.getElementsByClassName("sortDropDownContent");
-        var i;
-        for (i = 0; i < sDropDowns.length; i++) {
-            var openDropdown = sDropDowns[i];
-            if (openDropdown.classList.contains("show")) {
-                openDropdown.classList.remove("show");
-            }
+        // Close sort dropdown
+        const sDropDowns = document.getElementsByClassName("sortDropDownContent");
+        for (let i = 0; i < sDropDowns.length; i++) {
+            sDropDowns[i].classList.remove("show");
         }
     }
 }
 
-function handleAlgorithmSelect(algorithmName){
+// Called when user selects an algorithm
+function handleAlgorithmSelect(algorithmName) {
     selectedAlgorithm = algorithmName;
 
+    // Hide dropdowns
     document.getElementById("mySearchDropDown").classList.remove("show");
     document.getElementById("mySortDropDown").classList.remove("show");
 
+    // Update form title
     document.getElementById("formTitle").textContent = `Configure ${algorithmName}`;
-    document.getElementById("inputForm").style.display = "block";
-    document.getElementById("inputForm").scrollIntoView({behavior: "smooth"});
+
+    // Show form
+    const inputForm = document.getElementById("inputForm");
+    inputForm.style.display = "block";
+    inputForm.scrollIntoView({ behavior: "smooth" });
+
+    // Set hidden input value
+    document.getElementById('algorithmName').value = algorithmName;
 }
 
-function cancelForm(){
-    document.getElementById("inputForm").style.display = "none";
+// Cancel form and reset fields
+function cancelForm() {
+    const inputForm = document.getElementById("inputForm");
+    inputForm.style.display = "none";
     document.getElementById("algorithmForm").reset();
-    selectedAlgorithm = "";
+    selectedAlgorithm = '';
 }
-
-document.getElementById("algorithmForm").addEventListener('submit', function (e){
-    e.preventDefault();
-
-    const attemptName = document.getElementById("attemptName").value;
-    const valueCount = document.getElementById("valueCount").value;
-
-    if(attemptName && valueCount) {
-        fetch('/run-algorithm',{
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                algorithmName: selectedAlgorithm,
-                attemptName: attemptName,
-                numValues: valueCount,
-            })
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.redirect){
-                    window.location.href = data.redirect;
-                }
-            })
-    }
-})

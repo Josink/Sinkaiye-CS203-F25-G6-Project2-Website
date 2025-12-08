@@ -1,283 +1,329 @@
 require("dotenv").config();
-const jwt = require("jsonwebtoken")
-const sanitizaHTML = require("sanitize-html")
-const bcrypt = require('bcrypt')
-const cookieParser = require("cookie-parser")
-const express = require('express')
+const jwt = require("jsonwebtoken");
+const sanitizeHTML = require("sanitize-html");
+const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const express = require("express");
 const db = require("better-sqlite3")("ourApp.db");
-db.pragma("journal_mode = WAL")
+db.pragma("journal_mode = WAL");
 
-//database setupmain
-const createTables = db.transaction(()=>{
-    db.prepare(
-        `
+// Algorithm helpers
+const generateArray = require("./utils/generateArray");
+
+// Sorting algorithms
+const SelectionSort = require("./algorithms/SelectionSort");
+const BubbleSort = require("./algorithms/BubbleSort");
+const InsertionSort = require("./algorithms/InsertionSort");
+const MergeSort = require("./algorithms/MergeSort");
+const HeapSort = require("./algorithms/HeapSort");
+const QuickSort = require("./algorithms/QuickSort");
+
+// Searching algorithms
+const SequentialSearch = require("./algorithms/SequentialSearch");
+const BinarySearch = require("./algorithms/BinarySearch");
+
+const sortAlgorithms = {
+    "Selection Sort": SelectionSort,
+    "Bubble Sort": BubbleSort,
+    "Insertion Sort": InsertionSort,
+    "Merge Sort": MergeSort,
+    "Heap Sort": HeapSort,
+    "Quick Sort": QuickSort,
+};
+
+const searchAlgorithms = {
+    "Sequential Search": SequentialSearch,
+    "Binary Search": BinarySearch,
+};
+
+
+// -----------------------------
+// DATABASE TABLES
+// -----------------------------
+const createTables = db.transaction(() => {
+    db.prepare(`
         CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username STRING NOT NULL UNIQUE,
-        password STRING NOT NULL UNIQUE
-    )
-    `
-    ).run()
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL
+        )
+    `).run();
 
     db.prepare(`
-    CREATE TABLE IF NOT EXISTS posts (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        attemptName TEXT,
-        algorithmName TEXT,
-        numValues INTEGER,
-        authorid INTEGER,
-        createdDate TEXT,
-        FOREIGN KEY (authorid) REFERENCES users (id)
-    )
-    `).run()
+        CREATE TABLE IF NOT EXISTS attempts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            userId INTEGER NOT NULL,
+            attemptName TEXT NOT NULL,
+            algorithmName TEXT NOT NULL,
+            numValues INTEGER NOT NULL,
+            originalValues TEXT NOT NULL,
+            sortedValues TEXT,
+            comparisons INTEGER DEFAULT 0,
+            swaps INTEGER DEFAULT 0,
+            executionTime INTEGER DEFAULT 0,
+            searchIndex INTEGER,
+            createdDate TEXT NOT NULL,
+            FOREIGN KEY (userId) REFERENCES users(id)
+        )
+    `).run();
+});
+createTables();
 
-})
 
-createTables()
-//database setup end
-
-const app = express()
-
-app.set("view engine","ejs")
+// -----------------------------
+// EXPRESS SETUP
+// -----------------------------
+const app = express();
+app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: false }));
-app.use(express.static("public"))
-app.use(cookieParser())
-app.use(express.json())
+app.use(express.json());
+app.use(express.static("public"));
+app.use(cookieParser());
 
 
-app.use(function (req,res,next) {
-    res.locals.errors = []
-    //try to decode incoming cookie
-    try{
-        const decoded = jwt.verify(req.cookies.ourSimpleApp,process.env.JWTSECRET)
-        req.user = decoded
-    } catch (err){
-        req.user = false
+// -----------------------------
+// AUTH MIDDLEWARE
+// -----------------------------
+app.use((req, res, next) => {
+    try {
+        const decoded = jwt.verify(req.cookies.ourSimpleApp, process.env.JWTSECRET);
+        req.user = decoded;
+    } catch {
+        req.user = false;
     }
 
-    res.locals.user = req.user
-    console.log(req.user)
+    res.locals.user = req.user;
+    res.locals.errors = [];
+    next();
+});
 
-    next()
-})
-
-app.get("/", (req, res)=>{
-    res.render("homepage")
-})
-
-app.get("/algorithms",(req,res)=>{
-    res.render("algorithms")
-})
-
-app.get("/login", (req, res)=>{
-    res.render("login")
-})
-
-app.get("/signup",(req,res)=>{
-    res.render("signup.ejs")
-})
-
-app.get("/dashboard",mustBeLoggedIn, (req,res)=>{
-    const postStatement = db.prepare("SELECT * FROM posts WHERE authorid = ?")
-    const posts = postStatement.all(req.user.userid)
-    res.render("dashboard.ejs", {posts})
-})
-
-app.get("/logout",(req,res)=>{
-    res.clearCookie("ourSimpleApp")
-    res.redirect("/")
-})
-
-app.post("/login",(req,res)=>{
-    let errors = []
-
-    if (typeof req.body.username !== "string") req.body.username = ""
-    if (typeof req.body.password !== "string") req.body.password = ""
-
-    if (req.body.username.trim() === "") errors = ["Username / Password required"]
-    if (req.body.password === "") errors = ["Username / Password required"]
-
-    if (errors.length) {
-        return res.render("login",{errors})
-    }
-
-    const userInQuestionStatement = db.prepare("SELECT * FROM users WHERE USERNAME = ?")
-    const userInQuestion = userInQuestionStatement.get(req.body.username)
-
-    if(!userInQuestion){
-        errors = ["Invalid Username / Password"]
-        return res.render("login", {errors})
-    }
-
-    const matchOrNot = bcrypt.compareSync(req.body.password, userInQuestion.password)
-    if(!matchOrNot){
-        errors = ["Invalid Username / Password"]
-        return res.render("login", {errors})
-    }
-
-    const ourTokenValue = jwt.sign({exp: Math.floor(Date.now()/1000) + 60 * 60 * 24, skyColor: "blue", userid: userInQuestion.id, username: userInQuestion.username},process.env.JWTSECRET)
-
-    res.cookie("ourSimpleApp",ourTokenValue,{
-        httpOnly:true,
-        secure:true,
-        sameSite:"strict",
-        maxAge: 1000 * 60 * 60 * 24 // 1 day
-    })
-
-    res.redirect("/")
-})
-
-function mustBeLoggedIn(req,res, next){
-    if (req.user){
-        return next()
-    }
-    return res.redirect("/")
+function mustBeLoggedIn(req, res, next) {
+    if (req.user) return next();
+    return res.redirect("/login");
 }
 
-function sharedPostValidation(req){
-    const errors = []
 
-    req.body.attemptName = sanitizaHTML(req.body.attemptName.trim(), {allowedTags: [], allowedAttributes: {}})
+// -----------------------------
+// BASIC PAGES
+// -----------------------------
+app.get("/", (req, res) => res.render("homepage"));
+app.get("/algorithms", (req, res) => res.render("algorithms"));
+app.get("/login", (req, res) => res.render("login"));
+app.get("/signup", (req, res) => res.render("signup"));
+app.get("/logout", (req, res) => {
+    res.clearCookie("ourSimpleApp");
+    res.redirect("/");
+});
 
-    return errors;
-}
 
-app.post("/post", (req, res)=>{
-    const {attemptName, numValues, algorithm} = req.body
+// -----------------------------
+// DASHBOARD
+// -----------------------------
+app.get("/dashboard", mustBeLoggedIn, (req, res) => {
+    const stmt = db.prepare("SELECT * FROM attempts WHERE userId = ? ORDER BY id DESC");
+    const posts = stmt.all(req.user.userid);
 
-    const n = parseInt(numValues)
+    res.render("dashboard", { posts });
+});
 
-    const randomArray = [];
-    for(let i =0; i < n; i++){
-        randomArray.push(Math.floor(Math.random()*30000001)) // up to 3 million numbers
+
+// -----------------------------
+// LOGIN
+// -----------------------------
+app.post("/login", (req, res) => {
+    let errors = [];
+
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+        errors.push("Username and Password required");
+        return res.render("login", { errors });
     }
 
-    let sortedArray;
-    switch (algorithm){
-        case "Sequential Sort":
-            sortedArray = randomArray;
-            break;
-        case "Binary Sort":
-            sortedArray = randomArray;
-            break;
-        case "Insertion Sort":
-            sortedArray = randomArray;
-            break;
-        case "Merge Sort":
-            sortedArray = randomArray;
-            break;
-        case "Quick Sort":
-            sortedArray = randomArray;
-            break;
-        case "Heap Sort":
-            sortedArray = randomArray;
-            break;
-        case "Sequential Search":
-            sortedArray = randomArray;
-            break;
-        case "Binary Search":
-            sortedArray = randomArray;
-            break;
-        default:
-            sortedArray = randomArray;
+    const user = db.prepare("SELECT * FROM users WHERE username = ?").get(username);
+
+    if (!user || !bcrypt.compareSync(password, user.password)) {
+        return res.render("login", { errors: ["Invalid username or password"] });
     }
 
-    const newPost = {
-        id: posts.length + 1,
-        attemptName,
-        numValues: n,
-        algorithm,
-        original: randomArray,
-        sorted: sortedArray
-    };
+    const token = jwt.sign(
+        {
+            exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
+            userid: user.id,
+            username: user.username,
+        },
+        process.env.JWTSECRET
+    );
 
-    posts.push(newPost);
+    res.cookie("ourSimpleApp", token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+        maxAge: 1000 * 60 * 60 * 24,
+    });
 
-    res.redirect(`/post/${newPost.id}`);
+    res.redirect("/");
+});
 
-})
 
-app.get("/post/:id", (req, res)=>{
-    const statement = db.prepare("SELECT posts.*, users.username FROM posts INNER JOIN users ON posts.authorid = users.id WHERE posts.id = ?")
-    const post = statement.get(req.params.id)
+// -----------------------------
+// SIGNUP
+// -----------------------------
+app.post("/register", (req, res) => {
+    let errors = [];
 
-    if (!post){
-        return res.redirect("/")
+    const username = req.body.username?.trim();
+    const password = req.body.password;
+
+    if (!username || username.length < 3)
+        errors.push("Username must be at least 3 characters");
+
+    if (!password || password.length < 8)
+        errors.push("Password must be at least 8 characters");
+
+    if (db.prepare("SELECT * FROM users WHERE username = ?").get(username))
+        errors.push("Username already exists");
+
+    if (errors.length) return res.render("signup", { errors });
+
+    const hashed = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
+
+    const result = db
+        .prepare("INSERT INTO users (username, password) VALUES (?, ?)")
+        .run(username, hashed);
+
+    const token = jwt.sign(
+        {
+            exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
+            userid: result.lastInsertRowid,
+            username,
+        },
+        process.env.JWTSECRET
+    );
+
+    res.cookie("ourSimpleApp", token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+        maxAge: 1000 * 60 * 60 * 24,
+    });
+
+    res.redirect("/");
+});
+
+
+// -----------------------------
+// VIEW SINGLE POST
+// -----------------------------
+app.get("/post/:id", mustBeLoggedIn, (req, res) => {
+    const stmt = db.prepare(`
+        SELECT attempts.*, users.username 
+        FROM attempts 
+        JOIN users ON attempts.userId = users.id
+        WHERE attempts.id = ?
+    `);
+    const post = stmt.get(req.params.id);
+
+    if (!post) return res.redirect("/dashboard");
+
+    post.originalValues = JSON.parse(post.originalValues);
+    post.sortedValues = JSON.parse(post.sortedValues);
+
+    res.render("single-post", { post });
+});
+
+
+// -----------------------------
+// RUN ALGORITHM  (FIXED VERSION)
+// -----------------------------
+app.post("/run-algorithm", mustBeLoggedIn, (req, res) => {
+    try {
+        const userRow = db.prepare("SELECT id FROM users WHERE id = ?").get(req.user.userid);
+        if (!userRow) {
+            res.clearCookie("ourSimpleApp");
+            return res.redirect("/login");
+        }
+
+        const { algorithmName, attemptName, numValues } = req.body;
+
+        const cleanAttempt = sanitizeHTML(attemptName || "", {
+            allowedTags: [],
+            allowedAttributes: {},
+        });
+
+        const count = Number(numValues);
+        if (!algorithmName || count <= 0) {
+            return res.status(400).send("Invalid input");
+        }
+
+        const array = generateArray(count);
+        const originalValues = [...array];
+
+        let sortedValues = null;
+        let searchIndex = null;
+        let results = { comparisons: 0, swaps: 0, executionTime: 0 };
+
+        // Sorting
+        const cleanAlgoName = algorithmName.trim().toLowerCase();
+
+        const algoKey = Object.keys(sortAlgorithms).find(
+            key => key.toLowerCase() === cleanAlgoName
+        );
+
+        if (algoKey) {
+            const Algo = sortAlgorithms[algoKey];
+            const instance = new Algo(array);
+            instance.sort();
+            results = instance.getResults();
+
+            sortedValues = instance.values;
+        }
+
+        // Searching
+        else if (searchAlgorithms[algorithmName]) {
+            const Algo = searchAlgorithms[algorithmName];
+            const instance = new Algo(array);
+            const target = array[array.length - 1];
+
+            searchIndex = instance.search(target);
+
+            results = instance.getResults
+                ? instance.getResults(searchIndex)
+                : { comparisons: instance.comparisons, executionTime: instance.executionTime };
+        }
+
+        const insert = db.prepare(`
+            INSERT INTO attempts 
+            (userId, attemptName, algorithmName, numValues, originalValues, sortedValues,
+             comparisons, swaps, executionTime, searchIndex, createdDate)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+
+        const info = insert.run(
+            req.user.userid,
+            cleanAttempt,
+            algorithmName,
+            count,
+            JSON.stringify(originalValues),
+            JSON.stringify(sortedValues),
+            results.comparisons || 0,
+            results.swaps || 0,
+            results.executionTime || 0,
+            searchIndex,
+            new Date().toISOString()
+        );
+
+        res.redirect(`/post/${info.lastInsertRowid}`);
+    } catch (err) {
+        console.error("run-algorithm error:", err);
+        res.status(500).send("Server error");
     }
-
-    res.render("single-post", {post})
-})
-
-app.post("/run-algorithm", mustBeLoggedIn, (req,res)=>{
-    console.log("=== RUN ALGORITHM REQUEST ===");
-    console.log("Request body:", req.body);
-
-    const {algorithmName, attemptName, numValues} = req.body
-
-    const userExists = db.prepare("SELECT id FROM users WHERE id = ?").get(req.user?.userid);
-    if (!userExists) {
-        console.error("Tried to insert post but user not found:", req.user);
-        return res.status(400).send({ error: "Invalid user" });
-    }
-
-    const ourStatement = db.prepare("INSERT INTO posts (attemptName, algorithmName,numValues, authorid, createdDate ) VALUES (?,?,?,?,?)")
-    const result = ourStatement.run(
-        attemptName, algorithmName, numValues, req.user.userid, new Date().toISOString())
-
-    const getPostStatement = db.prepare("SELECT * FROM posts WHERE ID = ?")
-    const realPost = getPostStatement.get(result.lastInsertRowid)
-
-    return res.json({ redirect: `/post/${realPost.id}` })
-})
-
-app.post("/register",(req,res)=>{
-    const errors = []
-
-    if (typeof req.body.username !== "string") req.body.username = ""
-    if (typeof req.body.password !== "string") req.body.password = ""
-
-    req.body.username = req.body.username.trim()
-
-    if (!req.body.username) errors.push("You must provide a username.")
-    if (req.body.username && req.body.username.length < 3) errors.push("Username cannot be less than 3 characters.")
-    if (req.body.username && req.body.username.length > 10) errors.push("Username cannot exceed than 10 characters.")
-    if (req.body.username && !req.body.username.match(/^[a-zA-Z0-9]+$/)) errors.push("Username can only contain letters and numbers.")
-
-    const usernameStatement = db.prepare("SELECT * FROM users WHERE USERNAME = ?")
-    const usernameCheck= usernameStatement.get(req.body.username)
-    if(usernameCheck) errors.push("Username is already taken")
-
-    if (!req.body.password) errors.push("You must provide a password.")
-    if (req.body.password && req.body.password.length < 8) errors.push("Password cannot be less than 8 characters.")
-    if (req.body.password && req.body.password.length > 50) errors.push("Password cannot exceed than 50 characters.")
-
-    if(errors.length){
-       return res.render("signup",{errors})
-    }
-
-    // save the new user into database
-    const salt = bcrypt.genSaltSync(10);
-    req.body.password = bcrypt.hashSync(req.body.password, salt);
-
-    const ourStatement = db.prepare("INSERT INTO users (username, password) VALUES (?,?)")
-    const result = ourStatement.run(req.body.username, req.body.password)
-
-    const lookupStatement = db.prepare("SELECT * FROM users WHERE ROWID = ?;");
-    const ourUser = lookupStatement.get(result.lastInsertRowid)
-
-    //log the user in by giving them a cookie
-    const ourTokenValue = jwt.sign({exp: Math.floor(Date.now()/1000) + 60 * 60 * 24, skyColor: "blue", userid: ourUser.id, username: ourUser.username},process.env.JWTSECRET)
-
-    res.cookie("ourSimpleApp",ourTokenValue,{
-        httpOnly:true,
-        secure:true,
-        sameSite:"strict",
-        maxAge: 1000 * 60 * 60 * 24 // 1 day
-    })
-
-    res.redirect("/")
-})
+});
 
 
-
-app.listen(3000)
+// -----------------------------
+// START SERVER
+// -----------------------------
+app.listen(3000, () => {
+    console.log("Server running on http://localhost:3000");
+});

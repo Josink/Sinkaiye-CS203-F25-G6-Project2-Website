@@ -420,6 +420,8 @@ label {
     gap: 20px;
     justify-content: left;
     flex-wrap: wrap;
+    background-color: white;
+    border-radius: 12px;
 }
 
 .subtitle{
@@ -456,6 +458,14 @@ label {
 
 .algInfo li{
     list-style: disc inside;
+}
+
+.array{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    max-width: 800px;
+    margin: 2rem auto;
 }
 
 footer {

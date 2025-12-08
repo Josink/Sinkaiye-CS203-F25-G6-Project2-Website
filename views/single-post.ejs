@@ -6,49 +6,95 @@
 <body>
 
 <header>
-    <div class = "navContainer">
+    <div class="navContainer">
 
         <div class="logo">
             <i class="fas fa-project-diagram"></i>
             <span>Algorithms</span>
         </div>
 
-        <div class = "navLinks">
-            <a href="https://github.com/Josink/Sinkaiye-CS203-F25-G6-Project2-Website" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+        <div class="navLinks">
+            <a href="https://github.com/Josink/Sinkaiye-CS203-F25-G6-Project2-Website" target="_blank">
+                <i class="fab fa-github"></i> GitHub
+            </a>
             <a href="/algorithms"><i class="fas fa-sort-amount-down"></i> Algorithms</a>
         </div>
 
-        <div class = "authenticationButton">
+        <div class="authenticationButton">
             <a href="/" class="btn btn-outline">Home</a>
             <a href="/logout" class="btn btn-primary">Log out</a>
         </div>
 
     </div>
-
 </header>
 
 <main>
+    <div class="container">
 
-    <div class = container>
-        <div class = title>
-            <h1> <%= post.attemptName %> </h1>
+        <div class="title">
+            <h1><%= post.attemptName %></h1>
         </div>
 
         <h4>
-            posted by <%=post.username%> on <%= new Date(post.createdDate).getMonth() + 1%>/<%= new Date(post.createdDate).getDate()%>/<%= new Date(post.createdDate).getFullYear()%>
+            Posted by <%= post.username %> on
+            <%= new Date(post.createdDate).getMonth() + 1 %>/
+            <%= new Date(post.createdDate).getDate() %>/
+            <%= new Date(post.createdDate).getFullYear() %>
         </h4>
 
-        <div>
-            <%= post.algorithmName%>
+        <div class="algorithmInfo">
+            <p><strong>Algorithm:</strong> <%= post.algorithmName %></p>
+            <p><strong>Number of Values:</strong> <%= post.numValues %></p>
         </div>
 
+        <div class = array>
+            <% function displayArrayPerLine(arr) {
+                const maxDisplay = 20;
+                if (!arr || arr.length === 0) return '';
+                let displayed = arr.slice(0, maxDisplay).map(v => v).join('\n');
+                if (arr.length > maxDisplay) displayed += '\n...';
+                return displayed;
+            } %>
+
+            <% if (post.originalValues && post.originalValues.length) { %>
+                <div class="valuesContainer">
+                    <h4>Original Values:</h4>
+                    <pre><%= displayArrayPerLine(post.originalValues) %></pre>
+                </div>
+            <% } %>
+
+            <% if (post.sortedValues && post.sortedValues.length) { %>
+                <div class="valuesContainer">
+                    <h4>Sorted Values:</h4>
+                    <pre><%= displayArrayPerLine(post.sortedValues) %></pre>
+                </div>
+            <% } %>
+        </div>
+
+        <% if (post.comparisons || post.swaps || post.executionTime) { %>
+            <div class="resultsContainer">
+                <h4>Algorithm Results:</h4>
+                <p><strong>Comparisons:</strong> <%= post.comparisons %></p>
+                <p><strong>Swaps:</strong> <%= post.swaps %></p>
+                <p><strong>Execution Time:</strong> <%= post.executionTime.toFixed(2) %> ms</p>
+            </div>
+        <% } %>
+
+        <% if (post.searchIndex !== null && post.searchIndex !== undefined) { %>
+            <div class="searchResults">
+                <h4>Search Results:</h4>
+                <p>Target found at index: <%= post.searchIndex %></p>
+            </div>
+        <% } %>
+
+        <div class="backButton">
+            <a href="/dashboard" class="btn btn-outline">Back to Dashboard</a>
+        </div>
 
     </div>
-
 </main>
 
 <%- include('includes/footer') %>
 
 </body>
-
 </html>
