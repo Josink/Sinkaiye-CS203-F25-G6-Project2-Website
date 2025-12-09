@@ -5,6 +5,7 @@
   "main": "script.js",
   "scripts": {
     "start": "node server.js",
+    "postinstall": "npm rebuild better-sqlite3 --build-from-source",
     "dev": "nodemon server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
