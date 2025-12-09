@@ -4,13 +4,18 @@ const sanitizeHTML = require("sanitize-html");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 const express = require("express");
-const db = require("better-sqlite3")("ourApp.db");
-db.pragma("journal_mode = WAL");
-
 const path = require("path");
 
-// serve static files
-app.use(express.static(path.join(__dirname, "public")));
+// ------------------------------------
+// CREATE APP (must come BEFORE app.use())
+// ------------------------------------
+const app = express();
+
+// ------------------------------------
+// DATABASE
+// ------------------------------------
+const db = require("better-sqlite3")("ourApp.db");
+db.pragma("journal_mode = WAL");
 
 // Algorithm helpers
 const generateArray = require("./utils/generateArray");
@@ -40,7 +45,6 @@ const searchAlgorithms = {
     "Sequential Search": SequentialSearch,
     "Binary Search": BinarySearch,
 };
-
 
 // -----------------------------
 // DATABASE TABLES
@@ -74,17 +78,20 @@ const createTables = db.transaction(() => {
 });
 createTables();
 
-
 // -----------------------------
 // EXPRESS SETUP
 // -----------------------------
-const app = express();
 app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+
+// Middleware
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-app.use(express.static("public"));
 app.use(cookieParser());
-app.use('/public', express.static(path.join(__dirname, 'public')));
+
+// STATIC FILES (Render requires absolute path)
+app.use(express.static(path.join(__dirname, "public")));
+app.use("/public", express.static(path.join(__dirname, "public")));
 
 // -----------------------------
 // AUTH MIDDLEWARE
@@ -96,7 +103,6 @@ app.use((req, res, next) => {
     } catch {
         req.user = false;
     }
-
     res.locals.user = req.user;
     res.locals.errors = [];
     next();
@@ -107,19 +113,18 @@ function mustBeLoggedIn(req, res, next) {
     return res.redirect("/login");
 }
 
-
 // -----------------------------
-// BASIC PAGES
+// BASIC ROUTES
 // -----------------------------
 app.get("/", (req, res) => res.render("homepage"));
 app.get("/algorithms", (req, res) => res.render("algorithms"));
 app.get("/login", (req, res) => res.render("login"));
 app.get("/signup", (req, res) => res.render("signup"));
+
 app.get("/logout", (req, res) => {
     res.clearCookie("ourSimpleApp");
     res.redirect("/");
 });
-
 
 // -----------------------------
 // DASHBOARD
@@ -130,7 +135,6 @@ app.get("/dashboard", mustBeLoggedIn, (req, res) => {
 
     res.render("dashboard", { posts });
 });
-
 
 // -----------------------------
 // LOGIN
@@ -162,14 +166,13 @@ app.post("/login", (req, res) => {
 
     res.cookie("ourSimpleApp", token, {
         httpOnly: true,
-        secure: true,
-        sameSite: "strict",
+        secure: false, // IMPORTANT: Render free tier is HTTP on first request
+        sameSite: "lax",
         maxAge: 1000 * 60 * 60 * 24,
     });
 
     res.redirect("/");
 });
-
 
 // -----------------------------
 // SIGNUP
@@ -208,17 +211,16 @@ app.post("/register", (req, res) => {
 
     res.cookie("ourSimpleApp", token, {
         httpOnly: true,
-        secure: true,
-        sameSite: "strict",
+        secure: false,
+        sameSite: "lax",
         maxAge: 1000 * 60 * 60 * 24,
     });
 
     res.redirect("/");
 });
 
-
 // -----------------------------
-// VIEW SINGLE POST
+// SINGLE POST VIEW
 // -----------------------------
 app.get("/post/:id", mustBeLoggedIn, (req, res) => {
     const stmt = db.prepare(`
@@ -237,9 +239,8 @@ app.get("/post/:id", mustBeLoggedIn, (req, res) => {
     res.render("single-post", { post });
 });
 
-
 // -----------------------------
-// RUN ALGORITHM  (FIXED VERSION)
+// RUN ALGORITHM
 // -----------------------------
 app.post("/run-algorithm", mustBeLoggedIn, (req, res) => {
     try {
@@ -268,7 +269,6 @@ app.post("/run-algorithm", mustBeLoggedIn, (req, res) => {
         let searchIndex = null;
         let results = { comparisons: 0, swaps: 0, executionTime: 0 };
 
-        // Sorting
         const cleanAlgoName = algorithmName.trim().toLowerCase();
 
         const algoKey = Object.keys(sortAlgorithms).find(
@@ -283,8 +283,6 @@ app.post("/run-algorithm", mustBeLoggedIn, (req, res) => {
 
             sortedValues = instance.values;
         }
-
-        // Searching
         else if (searchAlgorithms[algorithmName]) {
             const Algo = searchAlgorithms[algorithmName];
             const instance = new Algo(array);
@@ -325,10 +323,10 @@ app.post("/run-algorithm", mustBeLoggedIn, (req, res) => {
     }
 });
 
-
 // -----------------------------
-// START SERVER
+// START SERVER (RENDER REQUIRED)
 // -----------------------------
-app.listen(3000, () => {
-    console.log("Server running on http://localhost:3000");
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log("Server running on port " + PORT);
 });
