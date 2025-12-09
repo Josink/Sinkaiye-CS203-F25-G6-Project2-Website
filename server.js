@@ -7,6 +7,11 @@ const express = require("express");
 const db = require("better-sqlite3")("ourApp.db");
 db.pragma("journal_mode = WAL");
 
+const path = require("path");
+
+// serve static files
+app.use(express.static(path.join(__dirname, "public")));
+
 // Algorithm helpers
 const generateArray = require("./utils/generateArray");
 
@@ -79,7 +84,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(express.static("public"));
 app.use(cookieParser());
-
 
 // -----------------------------
 // AUTH MIDDLEWARE

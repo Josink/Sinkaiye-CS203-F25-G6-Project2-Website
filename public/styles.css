@@ -415,13 +415,35 @@ label {
     transition: background-color 0.3s;
 }
 
-.previousPosts{
+.previousPosts {
+    margin-top: 20px;
+}
+
+.previousPosts h2 {
+    color: var(--dark-text);
+}
+
+.previousPosts ul {
+    list-style: none; /* remove bullets */
+    padding: 0;
+    margin: 0;
+}
+
+.previousPosts li {
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd; /* subtle separator between items */
     display: flex;
-    gap: 20px;
-    justify-content: left;
-    flex-wrap: wrap;
-    background-color: white;
-    border-radius: 12px;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.previousPosts li a {
+    text-decoration: none;
+    color: #333;
+}
+
+.previousPosts li a:hover {
+    color: var(--primary) /* highlight on hover */
 }
 
 .subtitle{
